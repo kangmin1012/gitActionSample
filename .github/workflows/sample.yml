@@ -68,7 +68,7 @@ jobs:
           https://slack.com/api/files.upload
           
       - name: On Success, Notify with Slack
-        if: ${{ success() && contains(github.ref, 'main' }}
+        if: ${{ success() && contains(github.ref, 'main') }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_ANDROID}}
