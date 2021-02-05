@@ -67,7 +67,7 @@ jobs:
      runs-on: ubuntu-20.04
      steps:
        - name: download Article for Make APK
-         uses: actions/download-article@v2
+         uses: actions/download-artifact@v2
          with:
            name: apk
            
