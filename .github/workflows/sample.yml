@@ -74,7 +74,7 @@ jobs:
        - name: Update apk name
          if: ${{ success() }}
          run: |
-           mv app/build/outputs/apk/debug/app-debug.apk 샘플.apk
+           mv app-debug.apk 샘플.apk
            echo 'apk=샘플.apk' >> $GITHUB_ENV
        - name: Upload APK
          if: ${{ success() }}
