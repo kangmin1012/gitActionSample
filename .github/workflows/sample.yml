@@ -41,15 +41,67 @@ jobs:
       - name: Change gradlew permissions
         run: chmod +x ./gradlew
       
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Build Debug
+        run: ./gradlew assembleDebug
       
-      - name: Send Slack Bot
-        if: ${{ success() }}
+      - name: Send Slack Bot Fail
+        if: ${{ failure() }}
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.WEB_HOOK_URL }}
           SLACK_COLOR: '#FF5733'
-          SLACK_TITLE: 'BUILD 성공했지만 실패했다고 테스트'
+          SLACK_TITLE: 'BUILD 실패'
           MSG_MINIMAL: true
           SLACK_MESSAGE: '에러 확인 ㄱㄱㄱ'
+          
+      - name: Upload APK at GitHub Action
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v2.2.2
+        with:
+          name: apk
+          path: app/build/outputs/apk/debug
+          
+  upload:
+     needs: [build]
+     name: upload to Slack
+     runs-on: ubuntu-20.04
+     steps:
+       - name: download Article for Make APK
+         uses: actions/download-article@v2.2.2
+         with:
+           name: apk2
+           
+       - name: Update apk name
+         if: ${{ success() }}
+         run: |
+           mv app/build/outputs/apk/debug/app-debug.apk 샘플.apk
+           echo 'apk=샘플.apk' >> $GITHUB_ENV
+       - name: Upload APK
+         if: ${{ success() }}
+         run: |
+           curl -X POST \
+           -F file=@$apk \
+           -F channels=${{secrets.SLACK_CHANNEL_ID}} \
+           -H "Authorization: Bearer ${{secrets.SLACK_BOT_API_TOKEN}}" \
+           https://slack.com/api/files.upload
+           
+       - name: Send Slack Bot SUCCESS
+         if: ${{ success() }}
+         uses: rtCamp/action-slack-notify@v2
+         env:
+           SLACK_WEBHOOK: ${{ secrets.WEB_HOOK_URL }}
+           SLACK_COLOR: '#5BFF33'
+           SLACK_TITLE: 'APK 생성 완료'
+           MSG_MINIMAL: true
+           SLACK_MESSAGE: 'apk가 생성되었습니다.'
+           
+           
+       - name: Send Slack Bot SUCCESS
+         if: ${{ failure() }}
+         uses: rtCamp/action-slack-notify@v2
+         env:
+           SLACK_WEBHOOK: ${{ secrets.WEB_HOOK_URL }}
+           SLACK_COLOR: '#FFF233'
+           SLACK_TITLE: '빌드만 성공'
+           MSG_MINIMAL: true
+           SLACK_MESSAGE: '빌드만 성공했습니다.'
