@@ -36,54 +36,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          java-package: jdk
       
       - name: Change gradlew permissions
         run: chmod +x ./gradlew
       
-      - name: Build Debug
-        run: ./gradlew assembleDebug
-      
-      - name: Bulid Release
-        if: ${{success()}}
-        run: ./gradlew assembleRelease
-      
-      - name: Upload APK artifacts
-        uses: actions/upload-artifact@v2.2.2
-        with:
-          path: app/build/outputs
-      
-      - name: Update Release apk name
-        if: ${{ success() }}
-        run: |
-          mv app/build/outputs/apk/release/app-relases.apk 샘플-릴리즈.apk
-          echo 'apk=샘플-릴리즈.apk' >> $GITHUB_ENV
-      
-      - name: Upload APK in Slack
-        if: ${{ success() }}
-        run: |
-          curl -X POST \
-          -F file=@$apk \
-          -F channels=${{secrets.SLACK_CHANNEL_ID}} \
-          -H "Authorization: Bearer ${{secrets.SLACK_BOT_TOKEN}}" \
-          https://slack.com/api/files.upload
-          
-      - name: On Success, Notify with Slack
-        if: ${{ success() && contains(github.ref, 'main') }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_ANDROID}}
-          SLACK_TITLE: '안드로이드 릴리즈 빌드 성공'
-          # TRUE 설정시 Ref, Event, Actions, URL, Commit 내역 안보임
-          MSG_MINIMAL: true
-          SLACK_MESSAGE: 'apk 생성 빠밤'
-          
-          
-      - name: On Fail, Notify with Slack
-        if: ${{ failure() }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_ANDROID}}
-          SLACK_TITLE: '안드로이드 릴리즈 빌드 실패 ㅜ'
-          # TRUE 설정시 Ref, Event, Actions, URL, Commit 내역 안보임
-          MSG_MINIMAL: false
-          SLACK_MESSAGE: '에러 확인'
+      - name: Build with Gradle
+        run: ./gradlew build
