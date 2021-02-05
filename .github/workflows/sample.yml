@@ -69,7 +69,7 @@ jobs:
        - name: download Article for Make APK
          uses: actions/download-article@v2
          with:
-           name: apk2
+           name: apk
            
        - name: Update apk name
          if: ${{ success() }}
